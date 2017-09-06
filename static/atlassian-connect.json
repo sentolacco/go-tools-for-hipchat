@@ -1,0 +1,30 @@
+{{define "config"}}{
+  "name": "Tools for HipChat",
+  "description": "Collection of conversion tools for HipChat",
+  "key": "tools-for-hipchat",
+  "links": {
+    "self": "{{.LocalBaseUrl}}/atlassian-connect.json",
+    "homepage": "https://github.com/sentolacco/go-tools-for-hipchat"
+  },
+  "vendor": {
+    "name": "Thomas Neumeier",
+    "url": "https://github.com/sentolacco"
+  },
+  "capabilities": {
+    "hipchatApiConsumer": {
+      "scopes": [
+        "send_notification"
+      ]
+    },
+    "installable": {
+      "callbackUrl": "{{.LocalBaseUrl}}/installable-callback"
+    },
+    "webhook": {
+      "url": "{{.LocalBaseUrl}}/tools",
+      "pattern": "^/tools",
+      "event": "room_message",
+      "name": "Tools for HipChat"
+    }
+  }
+}
+{{end}}
