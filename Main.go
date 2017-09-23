@@ -15,11 +15,7 @@ import (
 	"github.com/tbruyelle/hipchat-go/hipchat"
 	"fmt"
 	"github.com/jessevdk/go-flags"
-	"net/url"
-	"crypto/md5"
-	"io"
-	"encoding/hex"
-	"strings"
+	"github.com/sentolacco/go-tools-for-hipchat/tools"
 )
 
 // RoomConfig holds information to send messages to a specific room
@@ -88,30 +84,12 @@ func (c *Context) tools(w http.ResponseWriter, r *http.Request) {
 
 	util.PrintDump(w, r, true)
 
-
-	var opts = struct {
-		EncodeUrl struct {
-			Part string `short:"p" long:"part" choice:"query" choice:"path" default:"query"`
-			Args struct {
-				Input []string `required:"1-1"`
-			} `positional-args:"yes"`
-		} `command:"encodeUrl"`
-		HashMd5 struct {
-			Args struct {
-				Input []string `required:"1-1"`
-			} `positional-args:"yes"`
-		} `command:"hashMd5"`
-	}{}
-
 	m1 := payLoad["item"].(map[string]interface{})
 	m2 := m1["message"].(map[string]interface{})
 	message := m2["message"].(string)
 	fmt.Printf("Message: %v\n", message)
-	args := strings.Split(message, " ")
-	args = append(args[:0], args[1:]...)
-	p := flags.NewNamedParser("/tools", flags.Default)
-	p.AddGroup("Application Options", "", &opts)
-	_, err = p.ParseArgs(args)
+
+	result, err := tools.Tools(message)
 
 	notifRq := &hipchat.NotificationRequest{
 		Message:       "uninitialized",
@@ -126,28 +104,8 @@ func (c *Context) tools(w http.ResponseWriter, r *http.Request) {
 			Color:         "red",
 		}
 	} else {
-		cmd := p.Active.Name
-		arg := ""
-		result := ""
-
-		switch p.Active.Name {
-		case "encodeUrl":
-			arg = opts.EncodeUrl.Args.Input[0]
-			switch opts.EncodeUrl.Part {
-			case "path":
-				result = url.PathEscape(arg)
-			case "query":
-				result = url.QueryEscape(arg)
-			}
-		case "hashMd5":
-			arg = opts.HashMd5.Args.Input[0]
-			h := md5.New()
-			io.WriteString(h, arg)
-			result = hex.EncodeToString(h.Sum(nil)[:])
-		}
-
 		notifRq = &hipchat.NotificationRequest{
-			Message:       "/code " + cmd + " " + arg + " = " + result,
+			Message:       "/code " + result,
 			MessageFormat: "text",
 			Color:         "green",
 		}
