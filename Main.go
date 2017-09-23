@@ -109,7 +109,8 @@ func (c *Context) tools(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Message: %v\n", message)
 	args := strings.Split(message, " ")
 	args = append(args[:0], args[1:]...)
-	p := flags.NewParser(&opts, flags.Default)
+	p := flags.NewNamedParser("/tools", flags.Default)
+	p.AddGroup("Application Options", "", &opts)
 	_, err = p.ParseArgs(args)
 
 	notifRq := &hipchat.NotificationRequest{
@@ -120,8 +121,8 @@ func (c *Context) tools(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		notifRq = &hipchat.NotificationRequest{
-			Message:       "<code>" + err.(*flags.Error).Message + "</code>",
-			MessageFormat: "html",
+			Message:       "/code " + err.(*flags.Error).Message,
+			MessageFormat: "text",
 			Color:         "red",
 		}
 	} else {
@@ -146,8 +147,8 @@ func (c *Context) tools(w http.ResponseWriter, r *http.Request) {
 		}
 
 		notifRq = &hipchat.NotificationRequest{
-			Message:       "<code>" + cmd + " " + arg + " = " + result + "</code>",
-			MessageFormat: "html",
+			Message:       "/code " + cmd + " " + arg + " = " + result,
+			MessageFormat: "text",
 			Color:         "green",
 		}
 	}
@@ -184,7 +185,7 @@ func main() {
 	var (
 		port    = flag.String("port", "8080", "web server port")
 		static  = flag.String("static", "./static/", "static folder")
-		baseURL = flag.String("baseurl", /*os.Getenv("BASE_URL")*/ "https://b8085ebb.ngrok.io", "local base url")
+		baseURL = flag.String("baseurl", /*os.Getenv("BASE_URL")*/ "https://41efe6a3.ngrok.io", "local base url")
 	)
 	flag.Parse()
 
